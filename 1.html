@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>萌娘百科 · 黑客入侵</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1a1e2f 0%, #2a2f4f 100%);
+            font-family: 'Segoe UI', 'Poppins', 'Noto Sans CJK SC', system-ui, -apple-system, 'Microsoft YaHei', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 560px;
+            background: rgba(22, 26, 40, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 20px 24px 36px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,215,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .moe-header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #FFD966, #FF99CC, #B5A9FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .moe-header small {
+            font-size: 0.75rem;
+            display: block;
+            color: #FFE6B0;
+            text-shadow: none;
+        }
+
+        .card-panel {
+            background: rgba(10, 14, 23, 0.7);
+            border-radius: 32px;
+            padding: 28px 20px;
+            text-align: center;
+            border: 1px solid #FFD968;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            margin-bottom: 12px;
+        }
+        .card-label {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FFE3B0;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .card-input {
+            width: 80%;
+            padding: 14px 18px;
+            font-size: 1.3rem;
+            text-align: center;
+            background: #0b0e17;
+            border: 2px solid #ffcd7e;
+            border-radius: 60px;
+            color: #ffecb3;
+            font-weight: bold;
+            letter-spacing: 2px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .card-input:focus {
+            border-color: #FFAA55;
+            box-shadow: 0 0 12px #ffaa55aa;
+        }
+        .enter-btn {
+            margin-top: 24px;
+            background: linear-gradient(95deg, #ffb347, #ff8c1a);
+            border: none;
+            padding: 12px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 40px;
+            color: #1e1a2f;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 5px 0 #a44f00;
+            font-family: inherit;
+        }
+        .enter-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #a44f00;
+        }
+
+        /* 悬浮提示窗 */
+        .floating-toast {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #0f0e17dd;
+            backdrop-filter: blur(20px);
+            border-radius: 36px;
+            padding: 16px 28px;
+            text-align: center;
+            z-index: 1000;
+            border: 1px solid #ffcc88;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+            animation: fadeSlideIn 0.3s ease;
+            color: #ffeca2;
+            font-weight: bold;
+            font-size: 1.2rem;
+            min-width: 260px;
+            pointer-events: none;
+            font-family: monospace;
+            display: none;
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translate(-50%, -40%);}
+            to { opacity: 1; transform: translate(-50%, -50%);}
+        }
+
+        .progress-area {
+            text-align: center;
+            padding: 20px 10px;
+        }
+        .progress-text {
+            font-size: 1rem;
+            color: #ffd9a5;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .progress-bar-bg {
+            background: #2e2a44;
+            border-radius: 40px;
+            height: 16px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: inset 0 1px 4px #00000055;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ffb347, #ffda7c);
+            border-radius: 40px;
+            transition: width 0.08s linear;
+            box-shadow: 0 0 6px #ffb347;
+        }
+
+        .success-container {
+            text-align: center;
+        }
+        .face-success {
+            background: radial-gradient(circle at 30% 20%, #58c46e, #1f6e2e);
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            margin: 20px auto 16px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 6px #2aff6e55, 0 15px 30px black;
+            animation: softPop 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+        .face-success svg {
+            width: 70px;
+            height: 70px;
+            filter: drop-shadow(0 4px 6px #00000044);
+        }
+        @keyframes softPop {
+            0% { transform: scale(0.2); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .intruder-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFE6A3, #FFB347);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 12px 0 4px;
+            letter-spacing: 2px;
+        }
+        .server-status {
+            color: #b0ffb0;
+            background: #1a3320aa;
+            display: inline-block;
+            padding: 5px 18px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            margin-bottom: 28px;
+            backdrop-filter: blur(4px);
+        }
+        .option-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .option-btn {
+            background: rgba(20, 25, 45, 0.9);
+            border: 1px solid #ffb85e;
+            padding: 12px 22px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: #ffe0b5;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            backdrop-filter: blur(5px);
+            min-width: 130px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .option-btn:active {
+            transform: scale(0.96);
+            background: #ff9f3d;
+            color: #1f1a2e;
+            border-color: #fff0c0;
+        }
+
+        .hook-panel {
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(12px);
+            border-radius: 44px;
+            padding: 28px 20px;
+            text-align: center;
+        }
+        .hook-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .back-icon {
+            margin-top: 24px;
+            font-size: 0.8rem;
+            background: none;
+            border: none;
+            color: #aaaaff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+        button {
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+<!-- 悬浮提示 -->
+<div class="floating-toast" id="floatTip">检测到是开发者用户<br>已为你自动屏蔽</div>
+
+<div class="app-container" id="mainApp">
+    <!-- 输入卡密页面 -->
+    <div id="viewCard" class="card-panel">
+        <div class="moe-header">
+            🌸萌娘百科🌸
+            <small>战术入侵终端</small>
+        </div>
+        <div class="card-label">🔑 输入卡网密钥 🔑</div>
+        <input type="text" id="cardInput" class="card-input" placeholder="输入密钥" autocomplete="off" maxlength="10">
+        <button id="submitCardBtn" class="enter-btn">⚡ 验证卡密 ⚡</button>
+        <div style="margin-top: 15px; font-size: 0.7rem; color:#aaadcc;">* 内部开发者通道 *</div>
+    </div>
+
+    <!-- 进度条页面 -->
+    <div id="viewProgress" class="hidden progress-area">
+        <div class="moe-header" style="font-size:1.4rem;">🌐 萌娘百科入侵引擎 🌐</div>
+        <div class="progress-text" id="progressMsg">正在尝试入侵PUBGM服务器...</div>
+        <div class="progress-bar-bg"><div class="progressFill" id="progressFill"></div></div>
+        <div style="margin-top: 20px; font-size:12px; color:#b3b9e0;">规避反作弊中，请稍后</div>
+    </div>
+
+    <!-- 入侵成功页面 -->
+    <div id="viewSuccess" class="hidden success-container">
+        <div class="face-success">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17L4 12" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="intruder-title">入侵成功</div>
+        <div class="server-status">服务器连接正常</div>
+        <div class="option-grid">
+            <div class="option-btn" id="btnzdmz">自动瞄准</div>
+            <div class="option-btn" id="btnzdzz">子弹追踪</div>
+            <div class="option-btn" id="btnmgzd">美国子弹🇺🇸</div>
+            <div class="option-btn" id="btnHook">hook一下</div>
+            <div class="option-btn" id="btnOpenGame">打开游戏</div>
+        </div>
+    </div>
+
+    <!-- Hook选项页面 -->
+    <div id="viewHook" class="hidden hook-panel">
+        <div class="moe-header" style="font-size:1.4rem;">🔧 Hook功能选择 🔧</div>
+        <div class="hook-buttons">
+            <div class="option-btn" id="btnHack">黑客入侵</div>
+            <div class="option-btn" id="btnZGR">祖国人模式</div>
+        </div>
+        <button class="back-icon" id="btnBack">返回上一页</button>
+    </div>
+</div>
+
+<script>
+// 记录5个功能是否已点击
+let clickRecord = {
+    zdmz: false,
+    zdzz: false,
+    mgzd: false,
+    hack: false,
+    zgr: false
+};
+const totalNeed = 5;
+
+// 获取元素
+const floatTip = document.getElementById('floatTip');
+const viewCard = document.getElementById('viewCard');
+const viewProgress = document.getElementById('viewProgress');
+const viewSuccess = document.getElementById('viewSuccess');
+const viewHook = document.getElementById('viewHook');
+const cardInput = document.getElementById('cardInput');
+const submitCardBtn = document.getElementById('submitCardBtn');
+const progressFill = document.getElementById('progressFill');
+const btnHook = document.getElementById('btnHook');
+const btnBack = document.getElementById('btnBack');
+const btnHack = document.getElementById('btnHack');
+const btnZGR = document.getElementById('btnZGR');
+const btnzdmz = document.getElementById('btnzdmz');
+const btnzdzz = document.getElementById('btnzdzz');
+const btnmgzd = document.getElementById('btnmgzd');
+const btnOpenGame = document.getElementById('btnOpenGame');
+
+// 卡密正确：NB666
+const PWD = "NB666";
+
+// 开关状态存储
+let funcStatus = {
+    autoAim: false,
+    bulletTrack: false,
+    usBullet: false,
+    hack: false,
+    homeland: false
+};
+
+// 显示悬浮提示
+function showToast(text) {
+    floatTip.innerHTML = text;
+    floatTip.style.display = 'block';
+    setTimeout(() => {
+        floatTip.style.display = 'none';
+    }, 1200);
+}
+
+// 切换页面函数
+function showView(el) {
+    [viewCard, viewProgress, viewSuccess, viewHook].forEach(v=>v.classList.add('hidden'));
+    el.classList.remove('hidden');
+}
+
+// 检测是否全部点完
+function checkAllDone(){
+    let count = 0;
+    if(clickRecord.zdmz) count++;
+    if(clickRecord.zdzz) count++;
+    if(clickRecord.mgzd) count++;
+    if(clickRecord.hack) count++;
+    if(clickRecord.zgr) count++;
+
+    if(count >= totalNeed){
+        setTimeout(()=>{
+            alert("✅ 所有功能已全部激活\n自动封号开启成功✅");
+        }, 200);
+    }
+}
+    
+// 开始进度条动画
+function startProgress() {
+    let num = 0;
+    let timer = setInterval(() => {
+        num++;
+        progressFill.style.width = num + '%';
+        if(num >= 100) {
+            clearInterval(timer);
+            setTimeout(()=>{
+                showView(viewSuccess);
+            }, 600);
+        }
+    }, 40);
+}
+
+// 验证卡密
+submitCardBtn.addEventListener('click', ()=>{
+    let val = cardInput.value.trim();
+    if(val === PWD){
+        showToast('检测到是开发者用户<br>已为你自动屏蔽');
+        setTimeout(()=>{
+            showView(viewProgress);
+            startProgress();
+        }, 1200);
+    }else{
+        alert('卡密错误，请重新输入！');
+    }
+});
+
+// hook一下 跳转
+btnHook.addEventListener('click', ()=>{
+    showView(viewHook);
+});
+
+// 返回按钮
+btnBack.addEventListener('click', ()=>{
+    showView(viewSuccess);
+});
+
+// 黑客入侵切换
+btnHack.addEventListener('click', ()=>{
+    funcStatus.hack = !funcStatus.hack;
+    clickRecord.hack = true;
+    if(funcStatus.hack){
+        showToast('黑客入侵<br>开启成功');
+    }else{
+        showToast('黑客入侵<br>关闭成功');
+    }
+    checkAllDone();
+});
+
+// 祖国人模式切换
+btnZGR.addEventListener('click', ()=>{
+    funcStatus.homeland = !funcStatus.homeland;
+    clickRecord.zgr = true;
+    if(funcStatus.homeland){
+        showToast('祖国人模式<br>开启成功');
+    }else{
+        showToast('祖国人模式<br>关闭成功');
+    }
+    checkAllDone();
+});
+
+// 自动瞄准切换
+btnzdmz.addEventListener('click', ()=>{
+    funcStatus.autoAim = !funcStatus.autoAim;
+    clickRecord.zdmz = true;
+    if(funcStatus.autoAim){
+        showToast('自动瞄准<br>开启成功');
+    }else{
+        showToast('自动瞄准<br>关闭成功');
+    }
+    checkAllDone();
+});
+
+// 子弹追踪切换
+btnzdzz.addEventListener('click', ()=>{
+    funcStatus.bulletTrack = !funcStatus.bulletTrack;
+    clickRecord.zdzz = true;
+    if(funcStatus.bulletTrack){
+        showToast('子弹追踪<br>开启成功');
+    }else{
+        showToast('子弹追踪<br>关闭成功');
+    }
+    checkAllDone();
+});
+
+// 美国子弹切换
+btnmgzd.addEventListener('click', ()=>{
+    funcStatus.usBullet = !funcStatus.usBullet;
+    clickRecord.mgzd = true;
+    if(funcStatus.usBullet){
+        showToast('美国子弹🇺🇸<br>开启成功');
+    }else{
+        showToast('美国子弹🇺🇸<br>关闭成功');
+    }
+    checkAllDone();
+});
+
+// 【修复版】点击打开 PUBG MOBILE（安卓专用+备用方案）
+btnOpenGame.addEventListener('click', () => {
+    showToast('正在启动 PUBG MOBILE...');
+    // 安卓官方唤起协议（优先）
+    let intentUrl = "intent://com.tencent.ig/#Intent;package=com.tencent.ig;scheme=pubgmobile;end";
+    // 备用：旧协议
+    let fallbackUrl = "pubgmobile://";
+    // 备用2：官网
+    let siteUrl = "https://www.pubgmobile.com/";
+
+    // 先尝试安卓 Intent
+    window.location.href = intentUrl;
+
+    // 2秒没打开→试旧协议
+    setTimeout(() => {
+        if (document.hasFocus()) { // 没切到游戏
+            window.location.href = fallbackUrl;
+        }
+    }, 2000);
+
+    // 4秒还没打开→跳官网
+    setTimeout(() => {
+        if (document.hasFocus()) {
+            showToast('唤起失败，跳转官网');
+            window.location.href = siteUrl;
+        }
+    }, 4000);
+});
+
+</script>
+</body>
+</html>
